@@ -20,26 +20,23 @@ class BitBuffer:
         self.empty_bits -= 8
 
     def Clear(self):
-        self.buffer  = 0
+        self.buffer = 0
         self.empty_bits = 32
         self.source_pos = 0
 
     def HasData(self):
-        if self.empty_bits == 32 and int(self.source_pos) >= len(self.source):
-            return False
-        else:
-            return True
+        return not ((0xff & (self.empty_bits)) == 32 and int(self.source_pos) >= len(self.source))
 
     def Peak32(self):
-        return self.buffer, 32 - self.empty_bits
+        return 0xffffffff & self.buffer, 0xff & (32 - self.empty_bits)
 
     def Peak16(self):
-        return int(self.buffer >> 16), 32 - self.empty_bits
+        return 0xffff & int((0xffffffff & self.buffer) >> 16), 0xff & (32 - self.empty_bits)
 
     def Peak8(self):
-        return int(self.buffer >> 24), 32 - self.empty_bits
+        return 0xff & int((0xffffffff & self.buffer) >> 24), 0xff & (32 - self.empty_bits)
 
     def FlushBits(self, count: int):
-        self.buffer = self.buffer << count
+        self.buffer = 0xffffffff & (self.buffer << count)
         self.empty_bits += count
         self.TryFillBuffer()

@@ -1,0 +1,10 @@
+Pass = 1
+Horizontal = 2
+VerticalZero = 3
+VerticalR1 = 4
+VerticalR2 = 5
+VerticalR3 = 6
+VerticalL1 = 7
+VerticalL2 = 8
+VerticalL3 = 9
+Extension = 10
