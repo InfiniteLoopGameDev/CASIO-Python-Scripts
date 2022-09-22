@@ -7,6 +7,7 @@ import modecodes
 
 count = 0
 
+
 class CCITTDecoder:
     reverse_color = True
 
@@ -40,6 +41,8 @@ class CCITTDecoder:
 
         while self.buffer.HasData():
             print(self.buffer.buffer)
+            print(lines)
+            print(line)
 
             if line_pos > int(self.width) - 1:
                 lines.append(line)
