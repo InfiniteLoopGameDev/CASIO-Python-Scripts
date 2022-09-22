@@ -152,3 +152,7 @@ cython_debug/
 #.idea/
 /releases/
 casioplot.bmp
+.replit
+poetry.lock
+pyproject.toml
+replit.nix
