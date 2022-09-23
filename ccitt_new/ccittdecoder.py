@@ -1,3 +1,5 @@
+import casioplot
+
 import bitbuffer
 import ccittmodes
 import ccittcodes
@@ -28,10 +30,11 @@ class CCITTDecoder:
         __count = 0
 
         while self.buffer.has_data():
-            print("---", __count)
+            print("---", __count, __line_pos)
             __count += 1
 
             if __line_pos > int(self.width) - 1:
+                print("__line_pos > int(self.width)", __line_pos)
                 __lines.append(__line)
                 __line = [0] * self.width
                 __line_pos = 0
@@ -46,6 +49,8 @@ class CCITTDecoder:
 
             __mode = self.get_mode()
             self.buffer.flush_bits(__mode.bits_used)
+            print("mode buffer", self.buffer.buffer)
+            print("__mode.type", __mode.type)
 
             if __mode.type == modecodes.PASS:
                 _, __b2 = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color,
@@ -63,7 +68,8 @@ class CCITTDecoder:
                     while __scan:
                         __h = self.horizontal_codes.find_match_32(self.buffer.buffer, __is_white)
                         self.buffer.flush_bits(__h.bits_used)
-                        print(__h.bits_used)
+                        print("scan buffer", self.buffer.buffer)
+                        print("__h", __h.bits_used, __h.mask, __h.value, __h.c_color, __h.pixels, __h.terminating)
                         __length[i] += __h.pixels
                         __color[i] = 0xff & abs(__h.c_color)
 
@@ -72,24 +78,14 @@ class CCITTDecoder:
                             __scan = False
 
                 for i in range(0, 2):
-                    for p in range(0, __length[i]):
+                    for p in range(0, int(__length[i])):
                         if __line_pos < len(__line):
                             __line[__line_pos] = __color[i]
                         __line_pos += 1
 
-            elif __mode.type == modecodes.VERTICAL_ZERO:
-                pass
-            elif __mode.type == modecodes.VERTICAL_L1:
-                pass
-            elif __mode.type == modecodes.VERTICAL_R1:
-                pass
-            elif __mode.type == modecodes.VERTICAL_L2:
-                pass
-            elif __mode.type == modecodes.VERTICAL_R2:
-                pass
-            elif __mode.type == modecodes.VERTICAL_L3:
-                pass
-            elif __mode.type == modecodes.VERTICAL_R3:
+            elif __mode.type in {modecodes.VERTICAL_ZERO, modecodes.VERTICAL_L1, modecodes.VERTICAL_R1,
+                                 modecodes.VERTICAL_L2, modecodes.VERTICAL_R2, modecodes.VERTICAL_L3,
+                                 modecodes.VERTICAL_R3}:
                 __offset = __mode.get_vertical_offset()
                 __b1, _ = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color, True)
 
@@ -106,6 +102,16 @@ class CCITTDecoder:
                     __lines[i][x] = reverse_color(__lines[i][x])
 
         return __lines
+
+    def decode_to_image(self):
+        __decoded = self.decode()
+        for i in range(0, len(__decoded)):
+            for j in range(0, len(__decoded[i])):
+                if __decoded[i][j] == 0:
+                    __color = (0, 0, 0)
+                else:
+                    __color = (255, 255, 255)
+                casioplot.set_pixel(j, i, __color)
 
 
 def reverse_color(current: int) -> int:
