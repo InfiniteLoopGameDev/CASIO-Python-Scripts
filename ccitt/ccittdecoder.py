@@ -25,9 +25,6 @@ class CCITTDecoder:
             print((0xff & b8) & (0xff & self.modeCodes[i].Mask))
             print(self.modeCodes[i].Value)
             if self.modeCodes[i].Matches(b8):
-                global count
-                count += 1
-                print("end", count)
                 return self.modeCodes[i]
 
     def Decode(self):
@@ -40,10 +37,6 @@ class CCITTDecoder:
         a0Color = 255
 
         while self.buffer.HasData():
-            print(self.buffer.buffer)
-            print(lines)
-            print(line)
-
             if line_pos > int(self.width) - 1:
                 lines.append(line)
                 line = []
@@ -61,7 +54,6 @@ class CCITTDecoder:
 
             mode = self.GetMode()
             self.buffer.FlushBits(mode.BitsUsed)
-            print(self.buffer.buffer)
 
             if mode.Type == modecodes.Pass:
                 _, b2 = FindBValues(GetPreviousLine(lines, cur_line, self.width), line_pos, a0Color, False)
@@ -80,7 +72,6 @@ class CCITTDecoder:
                         if err is not None:
                             return None, err
                         self.buffer.FlushBits(h.BitsUsed)
-                        print(self.buffer.buffer)
                         length[i] += h.Pixels
                         color[i] = h.CColor
                         if h.Terminating:

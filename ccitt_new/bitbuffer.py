@@ -1,7 +1,7 @@
 class BitBuffer:
     buffer = 0
     empty_bits = 0
-    source = bytes("0")
+    source = bytes()
     source_pos = 0
 
     def flush_bits(self, count):
@@ -44,6 +44,6 @@ class BitBuffer:
     def add_byte(self, source: bytes):
         __pad_right = self.empty_bits - 8
         __zeroed = self.buffer >> (8 + __pad_right) << (8 + __pad_right)
-        __temp_source = 0xffffffff & abs(int.from_bytes(source))
+        __temp_source = 0xffffffff & abs(source)
         self.buffer = 0xffffffff & abs(__zeroed | __temp_source << __pad_right)
         self.empty_bits = 0xff & abs(self.empty_bits - 8)

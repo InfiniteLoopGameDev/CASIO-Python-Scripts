@@ -7,11 +7,17 @@ import modecodes
 class CCITTDecoder:
     reverse_color = True
 
-    def __init__(self, width: int, bytes: bytes):
+    def __init__(self, width: int, source: bytes):
         self.width = width
         self.horizontal_codes = ccittcodes.HorizontalCodes()
-        self.modeCodes = ccittmodes.GetModes()
-        self.buffer = bitbuffer.BitBuffer(bytes)
+        self.mode_codes = ccittmodes.GetModes()
+        self.buffer = bitbuffer.BitBuffer(source)
+
+    def get_mode(self) -> ccittmodes.ModeCode:
+        b8, _ = self.buffer.peak_8()
+        for i in range(0, len(self.mode_codes)):
+            if self.mode_codes[i].matches(b8):
+                return self.mode_codes[i]
 
     def decode(self) -> list:
         __lines = []
@@ -19,8 +25,12 @@ class CCITTDecoder:
         __line_pos = 0
         __cur_line = 0
         __a0color = 0xff
+        __count = 0
 
         while self.buffer.has_data():
+            print("---", __count)
+            __count += 1
+
             if __line_pos > int(self.width) - 1:
                 __lines.append(__line)
                 __line = [0] * self.width
@@ -28,7 +38,7 @@ class CCITTDecoder:
                 __a0color = 0xff
                 __cur_line += 1
                 if end_of_block(self.buffer.buffer):
-                  break
+                    break
 
             __v, _ = self.buffer.peak_32()
             if __v == 0x00000000:
@@ -38,7 +48,8 @@ class CCITTDecoder:
             self.buffer.flush_bits(__mode.bits_used)
 
             if __mode.type == modecodes.PASS:
-                _, __b2 = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color, False)
+                _, __b2 = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color,
+                                        False)
                 for p in range(__line_pos, __b2):
                     __line[__line_pos] = __a0color
                     __line_pos += 1
@@ -52,6 +63,7 @@ class CCITTDecoder:
                     while __scan:
                         __h = self.horizontal_codes.find_match_32(self.buffer.buffer, __is_white)
                         self.buffer.flush_bits(__h.bits_used)
+                        print(__h.bits_used)
                         __length[i] += __h.pixels
                         __color[i] = 0xff & abs(__h.c_color)
 
@@ -59,7 +71,7 @@ class CCITTDecoder:
                             __is_white = not __is_white
                             __scan = False
 
-                for i in range(0 , 2):
+                for i in range(0, 2):
                     for p in range(0, __length[i]):
                         if __line_pos < len(__line):
                             __line[__line_pos] = __color[i]
@@ -71,20 +83,19 @@ class CCITTDecoder:
                 pass
             elif __mode.type == modecodes.VERTICAL_R1:
                 pass
-            elif  __mode.type == modecodes.VERTICAL_L2:
+            elif __mode.type == modecodes.VERTICAL_L2:
                 pass
-            elif  __mode.type == modecodes.VERTICAL_R2:
+            elif __mode.type == modecodes.VERTICAL_R2:
                 pass
-            elif  __mode.type == modecodes.VERTICAL_L3:
+            elif __mode.type == modecodes.VERTICAL_L3:
                 pass
-            elif  __mode.type == modecodes.VERTICAL_R3:
+            elif __mode.type == modecodes.VERTICAL_R3:
                 __offset = __mode.get_vertical_offset()
                 __b1, _ = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color, True)
 
-                for i in range(__line_pos, __b1+__offset):
+                for i in range(__line_pos, __b1 + __offset):
                     if __line_pos < len(__line):
                         __line[__line_pos] = __a0color
-
                     __line_pos += 1
 
                 __a0color = reverse_color(__a0color)
@@ -108,11 +119,12 @@ def end_of_block(buffer: int) -> bool:
     return (buffer & 0xffffff00) == 0x00100100
 
 
-def get_previous_line(lines: array, current_line: int, width: int) -> bytes:
+def get_previous_line(lines: list, current_line: int, width: int) -> bytes:
     if current_line == 0:
         return b"\255" * width
     else:
         return lines[current_line - 1]
+
 
 def find_b_values(refline: bytes, a0pos: int, a0color: int, justb1: bool) -> (int, int):
     b1 = 0
@@ -129,7 +141,7 @@ def find_b_values(refline: bytes, a0pos: int, a0color: int, justb1: bool) -> (in
             last_color = b"\xff"
         else:
             cur_color = refline[i]
-            last_color = refline[i-1]
+            last_color = refline[i - 1]
 
         if b1 != 0:
             if cur_color == a0color and last_color == other:
@@ -148,4 +160,3 @@ def find_b_values(refline: bytes, a0pos: int, a0color: int, justb1: bool) -> (in
         b2 = len(refline)
 
     return b1, b2
-          

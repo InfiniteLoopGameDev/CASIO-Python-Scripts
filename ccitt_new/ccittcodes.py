@@ -14,7 +14,6 @@ class HorizontalCode:
 
 
 class HorizontalCodes:
-    count = 0
     white_codes = []
     black_codes = []
 
@@ -22,10 +21,11 @@ class HorizontalCodes:
         self.white_codes = load_white_codes()
         self.black_codes = load_black_codes()
 
-    def find_match_32(self, data: int, white: bool):
-        return self.find_match(int(data >> 16), white)
+    def find_match_32(self, data: int, white: bool) -> HorizontalCode:
+        return self.find_match((0xffff & abs(data >> 16)), white)
 
-    def find_match(self, data: int, white: bool):
+    def find_match(self, data: int, white: bool) -> HorizontalCode:
+        data = 0xffff & abs(data)
         __match = HorizontalCode()
         __lookup = []
         if white:
@@ -34,9 +34,7 @@ class HorizontalCodes:
             __lookup = self.black_codes
         for i in range(0, len(__lookup)):
             if __lookup[i].matches(data):
-                self.count += 1
-                return __lookup[i], None
-        return __match, "Bad Horizontal"
+                return __lookup[i]
 
 
 black = 0x00

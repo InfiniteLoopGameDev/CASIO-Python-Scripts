@@ -1,3 +1,5 @@
+import math
+
 import modecodes as mode_enums
 
 
@@ -45,13 +47,13 @@ mode_codes = [
 
 def GetModes() -> list:
     modes = []
-    for i in range(0, int(len(mode_codes) / 3)):
+    for i in range(0, math.ceil(len(mode_codes) / 3)):
         code = ModeCode()
         code.bits_used = 0xff & abs(mode_codes[i*3+1])
         code.value = 0xff & abs(mode_codes[i*3] << (8 - code.bits_used))
         code.mask = 0xff
         code.mask = 0xff & abs(code.mask << (8 - code.bits_used))
-        code.type = 0xff & abs(mode_codes[i*3+2])
+        code.type = mode_codes[i*3+2]
         modes.append(code)
 
     return modes
