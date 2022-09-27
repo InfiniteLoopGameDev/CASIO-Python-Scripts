@@ -1,176 +1,235 @@
-import casioplot
+from casioplot import set_pixel
 
 import bitbuffer
 import ccittmodes
 import ccittcodes
 import modecodes
 
-count = 0
-
 
 class CCITTDecoder:
     reverse_color = True
 
-    def __init__(self, width: int, bytes: bytes):
+    def __init__(self, width: int, source: bytes):
         self.width = width
         self.horizontal_codes = ccittcodes.HorizontalCodes()
-        self.modeCodes = ccittmodes.getModes()
-        self.buffer = bitbuffer.BitBuffer(bytes)
+        self.mode_codes = ccittmodes.GetModes()
+        self.buffer = bitbuffer.BitBuffer(source)
 
-    def GetMode(self):
-        b8, _ = self.buffer.Peak8()
-        for i in range(0, len(self.modeCodes)):
-            print(b8)
-            print(self.modeCodes[i].Mask)
-            print((0xff & b8) & (0xff & self.modeCodes[i].Mask))
-            print(self.modeCodes[i].Value)
-            if self.modeCodes[i].Matches(b8):
-                return self.modeCodes[i]
+    def get_mode(self) -> ccittmodes.ModeCode:
+        b8, _ = self.buffer.peak_8()
+        for i in self.mode_codes:
+            if i.matches(b8):
+                return i
 
-    def Decode(self):
-        lines = []
-        line = []
-        for i in range(0, self.width):
-            line.append(0)
-        line_pos = 0
-        cur_line = 0
-        a0Color = 255
+    def decode(self) -> list:
+        __lines = []
+        __line = [0] * self.width
+        __line_pos = 0
+        __cur_line = 0
+        __a0color = 0xff
+        __count = 0
 
-        while self.buffer.HasData():
-            if line_pos > int(self.width) - 1:
-                lines.append(line)
-                line = []
-                for i in range(0, self.width):
-                    line.append(0)
-                line_pos = 0
-                a0Color = 255
-                cur_line += 1
-                if EndOfBlock(self.buffer.buffer):
+        while self.buffer.has_data():
+            __count += 1
+
+            if __line_pos > int(self.width) - 1:
+                __lines.append(__line)
+                __line = [0] * self.width
+                __line_pos = 0
+                __a0color = 0xff
+                __cur_line += 1
+                if end_of_block(self.buffer.buffer):
                     break
 
-            v = self.buffer.Peak32()
-            if v == 0x00000000:
+            __v, _ = self.buffer.peak_32()
+            if __v == 0x00000000:
                 break
 
-            mode = self.GetMode()
-            self.buffer.FlushBits(mode.BitsUsed)
+            __mode = self.get_mode()
+            self.buffer.flush_bits(__mode.bits_used)
 
-            if mode.Type == modecodes.Pass:
-                _, b2 = FindBValues(GetPreviousLine(lines, cur_line, self.width), line_pos, a0Color, False)
-                for p in range(line_pos, b2):
-                    line[line_pos] = a0Color
-                    line_pos += 1
-            elif mode.Type == modecodes.Horizontal:
-                isWhite = a0Color == 255
+            if __mode.type == modecodes.PASS:
+                _, __b2 = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color,
+                                        False)
+                for p in range(__line_pos, __b2):
+                    __line[__line_pos] = __a0color
+                    __line_pos += 1
+            elif __mode.type == modecodes.HORIZONTAL:
+                __is_white = __a0color == 0xff
 
-                length = [0, 0]
-                color = [127, 127]
+                __length = [0, 0]
+                __color = [127, 127]
                 for i in range(0, 2):
-                    scan = True
-                    while scan:
-                        h, err = self.horizontal_codes.FindMatch32(self.buffer.buffer, isWhite)
-                        if err is not None:
-                            return None, err
-                        self.buffer.FlushBits(h.BitsUsed)
-                        length[i] += h.Pixels
-                        color[i] = h.CColor
-                        if h.Terminating:
-                            isWhite = not isWhite
-                            scan = False
+                    __scan = True
+                    while __scan:
+                        __h = self.horizontal_codes.find_match_32(self.buffer.buffer, __is_white)
+                        self.buffer.flush_bits(__h.bits_used)
+                        __length[i] += __h.pixels
+                        __color[i] = 0xff & abs(__h.c_color)
+
+                        if __h.terminating:
+                            __is_white = not __is_white
+                            __scan = False
 
                 for i in range(0, 2):
-                    for p in range(0, int(length[i])):
-                        if line_pos < len(line):
-                            line[line_pos] = color[i]
-                        line_pos += 1
-            elif mode.Type == modecodes.VerticalZero:
-                pass
-            elif mode.Type == modecodes.VerticalL1:
-                pass
-            elif mode.Type == modecodes.VerticalR1:
-                pass
-            elif mode.Type == modecodes.VerticalL2:
-                pass
-            elif mode.Type == modecodes.VerticalR2:
-                pass
-            elif mode.Type == modecodes.VerticalL3:
-                pass
-            elif mode.Type == modecodes.VerticalR3:
-                offset = mode.GetVerticalOffset()
-                b1, _ = FindBValues(GetPreviousLine(lines, cur_line, self.width), line_pos, a0Color, True)
+                    for p in range(0, __length[i]):
+                        if __line_pos < len(__line):
+                            __line[__line_pos] = __color[i]
+                        __line_pos += 1
 
-                for i in range(line_pos, (b1 + offset)):
-                    if line_pos < len(line):
-                        line[line_pos] = a0Color
-                    line_pos += 1
+            elif __mode.type in {modecodes.VERTICAL_ZERO, modecodes.VERTICAL_L1, modecodes.VERTICAL_R1,
+                                 modecodes.VERTICAL_L2, modecodes.VERTICAL_R2, modecodes.VERTICAL_L3,
+                                 modecodes.VERTICAL_R3}:
+                __offset = __mode.get_vertical_offset()
+                __b1, _ = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color, True)
 
-                a0Color = ReverseColor(a0Color)
-            else:
-                raise Exception()
+                for i in range(__line_pos, __b1 + __offset):
+                    if __line_pos < len(__line):
+                        __line[__line_pos] = __a0color
+                    __line_pos += 1
+
+                __a0color = reverse_color(__a0color)
 
         if self.reverse_color:
-            for i in range(0, len(lines)):
-                for x in range(0, len(lines[i])):
-                    lines[i][x] = ReverseColor(lines[i][x])
+            for i in range(0, len(__lines)):
+                for x in range(0, len(__lines[i])):
+                    __lines[i][x] = reverse_color(__lines[i][x])
 
-        return lines
+        return __lines
 
-    def DecodeToImg(self):
-        lines = self.Decode()
-        for y in range(0, len(lines)):
-            for x in range(0, int(self.width)):
-                if len(lines[y]) > x:
-                    casioplot.set_pixel(x, y, color=(0, 0, 0))
+    def decode_to_image(self):
+        __lines = []
+        __line = [0] * self.width
+        __line_pos = 0
+        __cur_line = 0
+        __a0color = 0xff
+        __count = 0
+
+        while self.buffer.has_data():
+            __count += 1
+
+            if __line_pos > int(self.width) - 1:
+                __lines.append(__line)
+                __line = [0] * self.width
+                __line_pos = 0
+                __a0color = 0xff
+                __cur_line += 1
+                if end_of_block(self.buffer.buffer):
+                    break
+
+            __v, _ = self.buffer.peak_32()
+            if __v == 0x00000000:
+                break
+
+            __mode = self.get_mode()
+            self.buffer.flush_bits(__mode.bits_used)
+
+            if __mode.type == modecodes.PASS:
+                _, __b2 = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color,
+                                        False)
+                for p in range(__line_pos, __b2):
+                    set_pixel(__line_pos, __cur_line, value_to_tuple(reverse_color(__a0color)))
+                    __line[__line_pos] = __a0color
+                    __line_pos += 1
+            elif __mode.type == modecodes.HORIZONTAL:
+                __is_white = __a0color == 0xff
+
+                __length = [0, 0]
+                __color = [127, 127]
+                for i in range(0, 2):
+                    __scan = True
+                    while __scan:
+                        __h = self.horizontal_codes.find_match_32(self.buffer.buffer, __is_white)
+                        self.buffer.flush_bits(__h.bits_used)
+                        __length[i] += __h.pixels
+                        __color[i] = 0xff & abs(__h.c_color)
+
+                        if __h.terminating:
+                            __is_white = not __is_white
+                            __scan = False
+
+                for i in range(0, 2):
+                    for p in range(0, int(__length[i])):
+                        if __line_pos < len(__line):
+                            set_pixel(__line_pos, __cur_line, value_to_tuple(reverse_color(__color[i])))
+                            __line[__line_pos] = __color[i]
+                        __line_pos += 1
+
+            elif __mode.type in {modecodes.VERTICAL_ZERO, modecodes.VERTICAL_L1, modecodes.VERTICAL_R1,
+                                 modecodes.VERTICAL_L2, modecodes.VERTICAL_R2, modecodes.VERTICAL_L3,
+                                 modecodes.VERTICAL_R3}:
+                __offset = __mode.get_vertical_offset()
+                __b1, _ = find_b_values(get_previous_line(__lines, __cur_line, self.width), __line_pos, __a0color, True)
+
+                for i in range(__line_pos, __b1 + __offset):
+                    if __line_pos < len(__line):
+                        set_pixel(__line_pos, __cur_line, value_to_tuple(reverse_color(__a0color)))
+                        __line[__line_pos] = __a0color
+                    __line_pos += 1
+
+                __a0color = reverse_color(__a0color)
+
+        if self.reverse_color:
+            for i in range(0, len(__lines)):
+                for x in range(0, len(__lines[i])):
+                    __lines[i][x] = reverse_color(__lines[i][x])
 
 
-def ReverseColor(current: int):
+
+def reverse_color(current: int) -> int:
     if current == 0:
-        return 255
+        return 0xff
     else:
         return 0
 
 
-def EndOfBlock(buffer: int):
+def end_of_block(buffer: int) -> bool:
     return (buffer & 0xffffff00) == 0x00100100
 
 
-def GetPreviousLine(lines: list, currentLine: int, width: int):
-    if currentLine == 0:
-        whiteOut = []
-        for i in range(0, width):
-            whiteOut.append(bytes(255))
-        return whiteOut
+def get_previous_line(lines: list, current_line: int, width: int) -> bytes:
+    if current_line == 0:
+        return b"\255" * width
     else:
-        return lines[currentLine - 1]
+        return lines[current_line - 1]
 
 
-def FindBValues(refLine: bytes, a0pos: int, a0Color: int, justb1: bool):
+def find_b_values(refline: bytes, a0pos: int, a0color: int, justb1: bool) -> (int, int):
     b1 = 0
     b2 = 0
-    other = ReverseColor(a0Color)
+    other = reverse_color(a0color)
     start_pos = a0pos
-    if start_pos != 0:
-        start_pos += 1
+    start_pos += 1 if start_pos != 0 else 0
 
-    for i in range(start_pos, len(refLine)):
+    for i in range(start_pos, len(refline)):
+        cur_color = bytes()
+        last_color = bytes()
         if i == 0:
-            cur_color = bytes(refLine[0])
-            last_color = bytes(255)
+            cur_color = refline[0]
+            last_color = b"\xff"
         else:
-            cur_color = bytes(refLine[i])
-            last_color = bytes(i - 1)
+            cur_color = refline[i]
+            last_color = refline[i - 1]
 
         if b1 != 0:
-            if cur_color == a0Color and last_color == other:
+            if cur_color == a0color and last_color == other:
                 b2 = i
                 return b1, b2
 
-        if cur_color == other and last_color == a0Color:
+        if cur_color == other and last_color == a0color:
             b1 = i
-            return b1, b2
+            if b2 != 0 or justb1:
+                b2 = i
+                return b1, b2
 
     if b1 == 0:
-        b1 = len(refLine)
+        b1 = len(refline)
     else:
-        b2 = len(refLine)
+        b2 = len(refline)
+
     return b1, b2
+
+
+def value_to_tuple(color: int) -> tuple[int, int, int]:
+    tuple_color = (255, 255, 255) if color == 0xff else (0, 0, 0)
+    return tuple_color

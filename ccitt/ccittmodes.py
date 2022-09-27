@@ -1,35 +1,37 @@
-import modecodes
+import math
+
+import modecodes as mode_enums
 
 
-class modeCode:
-    BitsUsed = 0
-    Value = 0
-    Mask = 0
-    Type = 0
+class ModeCode:
+    bits_used = 0
+    mask = 0
+    value = 0
+    type = 0
 
-    def Matches(self, data: int):
-        return data & self.Mask == self.Value
-
-    def GetVerticalOffset(self):
-        if self.Type == modecodes.VerticalZero:
+    def get_vertical_offset(self) -> int:
+        if self.type == mode_enums.VERTICAL_ZERO:
             return 0
-        elif self.Type == modecodes.VerticalL1:
+        elif self.type == mode_enums.VERTICAL_L1:
             return -1
-        elif self.Type == modecodes.VerticalR1:
+        elif self.type == mode_enums.VERTICAL_R1:
             return 1
-        elif self.Type == modecodes.VerticalL2:
+        elif self.type == mode_enums.VERTICAL_L2:
             return -2
-        elif self.Type == modecodes.VerticalR2:
+        elif self.type == mode_enums.VERTICAL_R2:
             return 2
-        elif self.Type == modecodes.VerticalL3:
+        elif self.type == mode_enums.VERTICAL_L3:
             return -3
-        elif self.Type == modecodes.VerticalR3:
+        elif self.type == mode_enums.VERTICAL_R3:
             return 3
         else:
             return 0
 
+    def matches(self, data: int) -> bool:
+        return (0xff & abs(data)) & self.mask == self.value
 
-modeCodes = [
+
+mode_codes = [
     0x1, 4, 1,
     0x1, 3, 2,
     0x1, 1, 3,  # 1
@@ -43,17 +45,15 @@ modeCodes = [
 ]
 
 
-def getModes():
+def GetModes() -> list:
     modes = []
-    for i in range(0, int(len(modeCodes) / 3)):
-        modes.append(0)
+    for i in range(0, math.ceil(len(mode_codes) / 3)):
+        code = ModeCode()
+        code.bits_used = 0xff & abs(mode_codes[i*3+1])
+        code.value = 0xff & abs(mode_codes[i*3] << (8 - code.bits_used))
+        code.mask = 0xff
+        code.mask = 0xff & abs(code.mask << (8 - code.bits_used))
+        code.type = mode_codes[i*3+2]
+        modes.append(code)
 
-    for i in range(0, int(len(modeCodes) / 3)):
-        code = modeCode()
-        code.BitsUsed = 0xff & (modeCodes[i * 3 + 1])
-        code.Value = 0xff & (modeCodes[i * 3] << (8 - code.BitsUsed))
-        code.Mask = 0xff
-        code.Mask = 0xff & (code.Mask << (8 - code.BitsUsed))
-        code.Type = 0xff & (modeCodes[i * 3 + 2])
-        modes[i] = code
     return modes
