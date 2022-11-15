@@ -1,3 +1,5 @@
+#!/bin/python
+
 from PIL import Image
 from sys import argv
 

@@ -12,6 +12,8 @@ class CCITTDecoder:
     def __init__(self, width: int, source: bytes):
         self.width = width
         self.horizontal_codes = ccittcodes.HorizontalCodes()
+        del ccittcodes.white_term_codes, ccittcodes.white_makeup_codes, ccittcodes.black_makeup_codes, \
+            ccittcodes.black_term_codes, ccittcodes.common_makeup_codes
         self.mode_codes = ccittmodes.GetModes()
         self.buffer = bitbuffer.BitBuffer(source)
 
@@ -63,6 +65,7 @@ class CCITTDecoder:
                     __scan = True
                     while __scan:
                         __h = self.horizontal_codes.find_match_32(self.buffer.buffer, __is_white)
+                        # print(vars(__h))
                         self.buffer.flush_bits(__h.bits_used)
                         __length[i] += __h.pixels
                         __color[i] = 0xff & abs(__h.c_color)
@@ -122,6 +125,7 @@ class CCITTDecoder:
                 break
 
             __mode = self.get_mode()
+            # print(__line)
             self.buffer.flush_bits(__mode.bits_used)
 
             if __mode.type == modecodes.PASS:
@@ -140,6 +144,7 @@ class CCITTDecoder:
                     __scan = True
                     while __scan:
                         __h = self.horizontal_codes.find_match_32(self.buffer.buffer, __is_white)
+                        # print(vars(__h))
                         self.buffer.flush_bits(__h.bits_used)
                         __length[i] += __h.pixels
                         __color[i] = 0xff & abs(__h.c_color)

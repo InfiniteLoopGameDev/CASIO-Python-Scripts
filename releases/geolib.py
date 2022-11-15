@@ -112,14 +112,3 @@ def smart_text(text, size="medium", mode="draw"):
         casioplot.draw_string(0, (i * 17), lines[i], colour, size)
 
 
-if __name__ == "__main__":
-    draw_circle(31, 63, 31)
-    draw_rectangle(57, 19, 35, 22)
-    draw_rectangle(9, 9, 42, 27, "erase")
-    draw_rectangle(9, 9, 76, 27, "erase")
-    draw_line(47, 48, 79, 48)
-    draw_line(6, 57, 26, 35)
-    casioplot.draw_string(0, 0, "geo")
-    casioplot.draw_string(90, 0, "lib")
-    casioplot.draw_string(87, 47, "v" + str(__version__))
-    casioplot.show_screen()

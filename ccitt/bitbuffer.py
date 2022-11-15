@@ -1,7 +1,4 @@
 class BitBuffer:
-    source = bytes()
-    source_pos = 0
-
     def flush_bits(self, count):
         self.buffer = 0xffffffff & (self.buffer << count)
         self.empty_bits = 0xff & (self.empty_bits + count)
