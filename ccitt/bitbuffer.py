@@ -11,28 +11,21 @@ class BitBuffer:
         return 0xffffffff & self.buffer, 0xff & (32 - self.empty_bits)
 
     def has_data(self) -> bool:
-        return not (self.empty_bits == 32 and int(self.source_pos) >= len(self.source))
-
-    def clear(self):
-        self.buffer = 0
-        self.empty_bits = 32
-        self.source_pos = 0
+        return not (self.empty_bits == 32 and len(self.source) == 0)
 
     def try_fill_buffer(self):
         while self.empty_bits > 7:
-            if self.source_pos >= len(self.source):
-                break
-            self.add_byte(self.source[self.source_pos])
-            self.source_pos += 1
+            self.add_byte(self.source[0])
+            self.source.pop(0)
 
     def __init__(self, source: bytes):
         self.empty_bits = 32
         self.buffer = 0
-        self.source = source
-        self.source_pos = 0
+        self.source = list(source)
+        del source
         self.try_fill_buffer()
 
-    def add_byte(self, source: bytes):
+    def add_byte(self, source: int):
         __pad_right = self.empty_bits - 8
         __zeroed = self.buffer >> (8 + __pad_right) << (8 + __pad_right)
         __temp_source = 0xffffffff & source
