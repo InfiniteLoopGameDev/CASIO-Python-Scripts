@@ -10,7 +10,6 @@ class HorizontalCode:
     terminating = False
 
     def matches(self, data: int):
-        # print("matches", (0xffff & data) & self.mask, self.value)
         return (0xffff & data) & self.mask == self.value
 
 
@@ -23,12 +22,10 @@ class HorizontalCodes:
         self.black_codes = load_black_codes()
 
     def find_match_32(self, data: int, white: bool) -> HorizontalCode:
-        # print("find_match_32", (0xffff & abs(data >> 16)), white)
         return self.find_match((0xffff & abs(data >> 16)), white)
 
     def find_match(self, data: int, white: bool) -> HorizontalCode:
         data = 0xffff & abs(data)
-        # print("find_match", data, white)
         if white:
             __lookup = self.white_codes
         else:
@@ -118,7 +115,6 @@ def load_white_codes() -> list:
         code.pixels = 0xffff & abs((i + 1) * 64)
         codes[c] = code
         c += 1
-        # print(c, vars(code))
 
     # common make up
     for i in range(0, math.ceil(len(common_makeup_codes) / 2)):

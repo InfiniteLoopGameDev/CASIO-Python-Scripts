@@ -11,7 +11,7 @@ if __name__ == "__main__":
     casioplot.casioplot_settings.set(top_margin=0)
     casioplot.casioplot_settings.set(image_format="bmp")
     casioplot.casioplot_settings.set(filename="../casioplot.bmp")
-    file_data = open("../frame2.bin", "rb").read()
+    file_data = open("../images/frame2.bin", "rb").read()
     width = file_data[0]
     img_data = file_data[1:]
     del file_data
