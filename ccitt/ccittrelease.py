@@ -39,7 +39,7 @@ if __name__ == "__main__":
         file.writelines(final)
 
     # Copy directory
-    copy_list = ["bitbuffer.py", "ccittcodes.py", "ccittdecoder.py", "ccittmodes.py", "modecodes.py"]
+    copy_list = ["ccittcodes.py", "ccittdecoder.py", "ccittmodes.py"]
     for i in copy_list:
         source = "ccitt/" + i
         destination = "releases/ccitt/" + i

@@ -13,10 +13,9 @@ if __name__ == "__main__":
     casioplot.casioplot_settings.set(filename="../casioplot.bmp")
     file_data = open("../images/frame2.bin", "rb").read()
     width = file_data[0]
-    img_data = file_data[1:]
+    img_data = list(file_data[1:])
     del file_data
-    decoder = ccittdecoder.CCITTDecoder(width, img_data)
-    decoder.decode_to_image()
+    ccittdecoder.decode_to_image(width, img_data)
     casioplot.show_screen()
     img = Image.open("../casioplot.bmp")
     newImage = img.crop((0, 0, 128, 64))
