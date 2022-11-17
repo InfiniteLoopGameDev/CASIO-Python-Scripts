@@ -1,13 +1,7 @@
 #!/bin/python
 
 from PIL import Image
-from sys import argv
-
-
-class ArgumentError(Exception):
-    def __init__(self):
-        self.__message = "Script takes in 1 or 2 arguments"
-        super().__init__(self.__message)
+import argparse
 
 
 class FileTypeError(Exception):
@@ -28,27 +22,35 @@ def image_extract(source: bytes):
     return data
 
 
-def to_bin(data: bytes, width: int, output: str):
-    bin_width = width.to_bytes(1, "little")
-    bin_data = bin_width + data
-    file = open(output, "wb")
-    file.write(bin_data)
-
-
 if __name__ == "__main__":
-    arguments = argv
-    arguments.pop(0)
+    # Argument Parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source", help="Source (.tiff) file location")
+    parser.add_argument("destination", nargs="?", help="Output (.bin) file location")
+    parser.add_argument("-H", "--hexdump", help="Output to terminal directly", action="store_true")
+    args = parser.parse_args()
 
-    if len(arguments) < 1 or len(arguments) > 2:
-        raise ArgumentError
-    elif len(arguments) == 1:
-        input_file = arguments[0]
-        output_file = "".join((arguments[0].split(".")[0], ".bin"))
+    # Set destination to be source if not empty
+    if not args.destination:
+        dest = args.source
+        dest = "".join(dest.split(".")[:-1])
+        dest += ".bin"
     else:
-        input_file = arguments[0]
-        output_file = arguments[1]
+        dest = args.destination
 
-    img = open(input_file, "rb")
-    img_data = image_extract(img.read())
-    img_width = Image.open(input_file).size[0]
-    to_bin(img_data, img_width, output_file)
+    # Extract data from source file
+    with open(args.source, "rb") as file:
+        file_data = file.read()
+
+    width = Image.open(args.source).size[0].to_bytes(1, "little")
+    raw_data = image_extract(file_data)
+    full_data = width + raw_data
+
+    if args.hexdump:
+        # Hexdump
+        print(full_data.hex().upper())
+        exit(0)
+    else:
+        # Write to destination
+        with open(dest, "wb") as file:
+            file.write(full_data)
