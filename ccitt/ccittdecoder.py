@@ -14,7 +14,7 @@ class CCITTDecoder:
         self.horizontal_codes = ccittcodes.HorizontalCodes()
         del ccittcodes.white_term_codes, ccittcodes.white_makeup_codes, ccittcodes.black_makeup_codes, \
             ccittcodes.black_term_codes, ccittcodes.common_makeup_codes
-        self.mode_codes = ccittmodes.GetModes()
+        self.mode_codes = ccittmodes.get_modes()
         del ccittmodes.mode_codes
         self.buffer = bitbuffer.BitBuffer(source)
         del source
@@ -179,7 +179,6 @@ class CCITTDecoder:
                     __lines[i][x] = reverse_color(__lines[i][x])
 
 
-
 def reverse_color(current: int) -> int:
     if current == 0:
         return 0xff
@@ -198,16 +197,16 @@ def get_previous_line(lines: list, current_line: int, width: int) -> bytes:
         return lines[current_line - 1]
 
 
-def find_b_values(refline: bytes, a0pos: int, a0color: int, justb1: bool) -> (int, int):
+def find_b_values(ref_line: bytes, a0pos: int, a0color: int, just_b1: bool) -> (int, int):
     b1 = 0
     b2 = 0
     other = reverse_color(a0color)
     start_pos = a0pos
     start_pos += 1 if start_pos != 0 else 0
 
-    for i in range(start_pos, len(refline)):
-        cur_color = refline[0] if i == 0 else refline[i]
-        last_color = 0xff if i == 0 else refline[i - 1]
+    for i in range(start_pos, len(ref_line)):
+        cur_color = ref_line[0] if i == 0 else ref_line[i]
+        last_color = 0xff if i == 0 else ref_line[i - 1]
 
         if b1 != 0:
             if cur_color == a0color and last_color == other:
@@ -216,14 +215,14 @@ def find_b_values(refline: bytes, a0pos: int, a0color: int, justb1: bool) -> (in
 
         if cur_color == other and last_color == a0color:
             b1 = i
-            if b2 != 0 or justb1:
+            if b2 != 0 or just_b1:
                 b2 = i
                 return b1, b2
 
     if b1 == 0:
-        b1 = len(refline)
+        b1 = len(ref_line)
     else:
-        b2 = len(refline)
+        b2 = len(ref_line)
 
     return b1, b2
 

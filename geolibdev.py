@@ -77,11 +77,11 @@ def draw_circle(radius, x=0, y=0, mode="draw"):
         x += 1
 
 
-def draw_rectangle(x, y, posX=0, posY=0, mode="draw"):
+def draw_rectangle(x, y, pos_x=0, pos_y=0, mode="draw"):
     global offsetX
     global offsetY
-    offsetX = posX
-    offsetY = posY
+    offsetX = pos_x
+    offsetY = pos_y
     for i in range(0, x):
         for j in range(0, y):
             set_pixel(i, j, mode)
@@ -110,6 +110,7 @@ def smart_text(text, size="medium", mode="draw"):
         tmp_str = ""
         index += character_num
     for i in range(0, len(lines)):
+        # noinspection PyTypeChecker
         casioplot.draw_string(0, (i * 17), lines[i], colour, size)
 
 

@@ -21,12 +21,12 @@ class HorizontalCodes:
         self.white_codes = load_white_codes()
         self.black_codes = load_black_codes()
 
-    def find_match_32(self, data: int, white: bool) -> HorizontalCode:
-        return self.find_match((0xffff & abs(data >> 16)), white)
+    def find_match_32(self, data: int, is_white: bool) -> HorizontalCode:
+        return self.find_match((0xffff & abs(data >> 16)), is_white)
 
-    def find_match(self, data: int, white: bool) -> HorizontalCode:
+    def find_match(self, data: int, is_white: bool) -> HorizontalCode:
         data = 0xffff & abs(data)
-        if white:
+        if is_white:
             __lookup = self.white_codes
         else:
             __lookup = self.black_codes

@@ -9,6 +9,7 @@ def imageFormat(file):
     img.thumbnail(max_size)
     new_image = Image.new("RGBA", max_size)
     box = tuple((n - o) // 2 for n, o in zip(max_size, img.size))
+    # noinspection PyTypeChecker
     new_image.paste(img, box)
     new_image = new_image.convert("1")
 

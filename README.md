@@ -21,7 +21,7 @@ Note: the script can also output to a binary file. See `python ./ccitt/ccittconv
 
 ### Transferring to the calculator
 
-Download the `ccitt.zip` from [here](https://github.com/InfiniteLoopGameDev/CASIO-Python-Scripts/releases). Then exctract the archive.  
+Download the `ccitt.zip` from [here](https://github.com/InfiniteLoopGameDev/CASIO-Python-Scripts/releases). Then extract the archive.  
 Plug-in your fx-9860G in USB Flash Mode. Copy the `ccitt` folder to the calculator.   
 Note this can also be made from source using the `ccittrelease.py` script
 Change the following in the `image.py` file:  
@@ -48,4 +48,5 @@ if the image is too large
 Credits
 -------
 
-plaisted for creating [plaisted/CCITTFaxDecode](github.com/plaisted/CCITTFaxDecode) which this is based on
+plaisted for creating [a GO version of CCITTFaxDecode](github.com/plaisted/CCITTFaxDecode) which this is based on  
+uniwix for creating [a version of casioplot that is on PyPI](github.com/uniwix/casioplot) which makes development much easier

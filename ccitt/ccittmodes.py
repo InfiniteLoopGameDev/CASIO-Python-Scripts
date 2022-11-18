@@ -45,7 +45,7 @@ mode_codes = [
 ]
 
 
-def GetModes() -> list:
+def get_modes() -> list:
     modes = []
     for i in range(0, math.ceil(len(mode_codes) / 3)):
         code = ModeCode()

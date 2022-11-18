@@ -17,6 +17,7 @@ def image_extract(source: bytes):
         order = "big"
     else:
         raise FileTypeError
+    # noinspection PyTypeChecker
     data_end = int.from_bytes(source[4:7], order)
     data = source[8:data_end]
     return data
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument("-H", "--hexdump", help="Output to terminal directly", action="store_true")
     args = parser.parse_args()
 
-    # Set destination to be source if not empty
+    # Set destination to be the same as the source if not empty
     if not args.destination:
         dest = args.source
         dest = "".join(dest.split(".")[:-1])
