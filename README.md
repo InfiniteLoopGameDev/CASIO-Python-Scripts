@@ -45,8 +45,7 @@ Now running the `ccittdriver.py` calculator should display your image (give a ta
 a few tens of seconds). Note: the calculator might throw a `MemoryError` message
 if the image is too large
 
-<!-- 
-    TODO: use a .zip
-    TODO: describe new ccittrelease.py
-    TODO: credit plaisted/CCITTFaxDecode <- GIGA CHAD
--->
+Credits
+-------
+
+plaisted for creating [plaisted/CCITTFaxDecode](github.com/plaisted/CCITTFaxDecode) which this is based on
