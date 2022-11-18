@@ -30,6 +30,7 @@ buffer = 0
 empty_bits = 32
 
 
+# Bit Buffer
 def fill_buffer():
     global empty_bits, buffer
     while empty_bits > 7:
@@ -55,6 +56,14 @@ def peak_32() -> (int, int):
     return 0xffffffff & buffer, 0xff & (32 - empty_bits)
 
 
+# Horizontal Codes
+def find_match(data: int, is_white: bool) -> tuple[int, int, int, int, int]:
+    data = 0xffff & abs(data >> 16)
+    for i in horizontal_codes[not is_white]:
+        if (0xffff & data) & i[1] == i[2]:
+            return i
+
+
 def decode_to_image(width: int, source_data: list):
     global line_pos
     global lines
@@ -62,4 +71,3 @@ def decode_to_image(width: int, source_data: list):
     global source
     source = source_data
     lines.append([0] * width)
-
