@@ -206,14 +206,8 @@ def find_b_values(refline: bytes, a0pos: int, a0color: int, justb1: bool) -> (in
     start_pos += 1 if start_pos != 0 else 0
 
     for i in range(start_pos, len(refline)):
-        cur_color = bytes()
-        last_color = bytes()
-        if i == 0:
-            cur_color = refline[0]
-            last_color = b"\xff"
-        else:
-            cur_color = refline[i]
-            last_color = refline[i - 1]
+        cur_color = refline[0] if i == 0 else refline[i]
+        last_color = 0xff if i == 0 else refline[i - 1]
 
         if b1 != 0:
             if cur_color == a0color and last_color == other:
