@@ -48,5 +48,5 @@ if the image is too large
 Credits
 -------
 
-plaisted for creating [a GO version of CCITTFaxDecode](github.com/plaisted/CCITTFaxDecode) which this is based on  
+plaisted for creating [a GO version of CCITTFaxDecode](github.com/plaisted/CCITTFaxDecode) which the CCITT Decoder is based on  
 uniwix for creating [a version of casioplot that is on PyPI](github.com/uniwix/casioplot) which makes development much easier

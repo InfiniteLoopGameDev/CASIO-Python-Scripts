@@ -1,4 +1,4 @@
-from casioplot import set_pixel
+from casioplot import set_pixel, show_screen
 
 import bitbuffer
 import ccittmodes
@@ -111,6 +111,10 @@ class CCITTDecoder:
 
         while self.buffer.has_data():
             __count += 1
+
+            print(__count)
+            print(self.buffer.buffer)
+            show_screen()
 
             if __line_pos > int(self.width) - 1:
                 __lines.append(__line)

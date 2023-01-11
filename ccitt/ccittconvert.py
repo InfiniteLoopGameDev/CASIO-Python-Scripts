@@ -34,7 +34,7 @@ if __name__ == "__main__":
     # Set destination to be the same as the source if not empty
     if not args.destination:
         dest = args.source
-        dest = "".join(dest.split(".")[:-1])
+        dest = ".".join(dest.split(".")[:-1])
         dest += ".bin"
     else:
         dest = args.destination
@@ -53,5 +53,5 @@ if __name__ == "__main__":
         exit(0)
     else:
         # Write to destination
-        with open(dest, "wb") as file:
+        with open(dest, "wb+") as file:
             file.write(full_data)
