@@ -4,7 +4,7 @@ import os
 
 import python_minifier
 
-line_removal = ["casioplot_settings", "from PIL", "Image", "__name__"]
+line_removal = ["casioplot.casioplot_settings", "from PIL", "Image", "__name__"]
 # noinspection SpellCheckingInspection
 line_replace = [
     ["file_data = open("],
@@ -21,10 +21,15 @@ if __name__ == "__main__":
     final = []
     with open("ccitt/ccittdriverdev.py") as file:
         data = file.readlines()
+    past_main = False
     for line in data:
         newline = line
         newline = newline.replace('casioplot.casioplot_settings.get("width")', '128')
-        newline = newline.replace("    ", "")
+        if past_main:
+            newline = newline.replace("    ", "")
+
+        if "if __name__ == \"__main__\":" in newline:
+            past_main = True
 
         if any(x in newline for x in line_removal):
             continue
