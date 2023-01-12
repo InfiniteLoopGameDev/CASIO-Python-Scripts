@@ -9,8 +9,8 @@ line_removal = ["casioplot_settings", "from PIL", "Image", "__name__"]
 line_replace = [
     ["import ccittdecoder", "file_data = open("],
     ["import ccittdecoder\nfrom image import your_image_name as img_data", "file_data = bytes([int(img_data[i:i + 2],"
-                                                                           "16) for i in range(0, len(img_data), "
-                                                                           "2)])\ndel img_data\n"]
+     "16) for i in range(0, len(img_data), "
+     "2)])\ndel img_data\n"]
 ]
 
 if __name__ == "__main__":
@@ -25,7 +25,6 @@ if __name__ == "__main__":
         newline = line
         newline = newline.replace('casioplot.casioplot_settings.get("width")', '128')
         newline = newline.replace("    ", "")
-        newline = newline.replace("../", "")
 
         if any(x in newline for x in line_removal):
             continue
