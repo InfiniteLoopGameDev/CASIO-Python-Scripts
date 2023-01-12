@@ -3,6 +3,18 @@ import casioplot
 
 import ccittdecoder
 
+# Checks if running on calculator
+# If so, displays available images and imports it
+if not "casioplot_settings" in dir(casioplot):
+    import image
+    print("Available images:")
+    for image_name in dir(image):
+        if not image_name.startswith("__"):
+            print(image_name)
+    del image
+    image_name = input("Enter image name: ")
+    exec("from image import " + image_name + " as img_data")
+
 
 if __name__ == "__main__":
     casioplot.casioplot_settings.casio_graph_90_plus_e()

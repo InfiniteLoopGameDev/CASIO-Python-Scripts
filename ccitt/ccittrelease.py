@@ -7,8 +7,8 @@ import python_minifier
 line_removal = ["casioplot_settings", "from PIL", "Image", "__name__"]
 # noinspection SpellCheckingInspection
 line_replace = [
-    ["import ccittdecoder", "file_data = open("],
-    ["import ccittdecoder\nfrom image import your_image_name as img_data", "file_data = bytes([int(img_data[i:i + 2],"
+    ["file_data = open("],
+    ["file_data = bytes([int(img_data[i:i + 2],"
      "16) for i in range(0, len(img_data), "
      "2)])\ndel img_data\n"]
 ]
