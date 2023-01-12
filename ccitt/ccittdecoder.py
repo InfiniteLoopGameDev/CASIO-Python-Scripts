@@ -112,8 +112,6 @@ class CCITTDecoder:
         while self.buffer.has_data():
             __count += 1
 
-            print(__count)
-            print(self.buffer.buffer)
             show_screen()
 
             if __line_pos > int(self.width) - 1:
@@ -201,7 +199,7 @@ def get_previous_line(lines: list, current_line: int, width: int) -> bytes:
         return lines[current_line - 1]
 
 
-def find_b_values(ref_line: bytes, a0pos: int, a0color: int, just_b1: bool) -> (int, int):
+def find_b_values(ref_line: bytes, a0pos: int, a0color: int, just_b1: bool) -> tuple[int, int]:
     b1 = 0
     b2 = 0
     other = reverse_color(a0color)
