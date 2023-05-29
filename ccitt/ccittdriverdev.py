@@ -6,12 +6,14 @@ import ccittdecoder
 # Checks if running on calculator
 # If so, displays available images and imports it
 if not "casioplot_settings" in dir(casioplot):
-    import image
+    try:
+        from image import images
+    except ImportError:
+        images = ["ERROR: Loading image list failed"]
     print("Available images:")
-    for image_name in dir(image):
-        if not image_name.startswith("__"):
-            print(image_name)
-    del image
+    for image_name in images:
+        print(image_name)
+    del images
     image_name = input("Enter image name: ")
     exec("from image import " + image_name + " as img_data")
 
