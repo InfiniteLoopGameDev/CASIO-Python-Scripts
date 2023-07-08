@@ -1,6 +1,8 @@
 #!/bin/python
 import shutil
 import os
+import argparse
+import copy
 
 import python_minifier
 
@@ -14,6 +16,11 @@ line_replace = [
 ]
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--emulator", help="Shortens file names to be able to be imported into the emulator",
+                        action="store_true")
+    args = parser.parse_args()
+
     if not os.path.exists("releases/ccitt/"):
         os.makedirs("releases/ccitt/")
 
@@ -49,6 +56,21 @@ if __name__ == "__main__":
         source = "ccitt/" + i
         destination = "releases/ccitt/" + i
         shutil.copy2(source, destination)
+
+    # Rename files if necessary
+    if args.emulator:
+        original_names = copy.deepcopy(os.listdir("releases/ccitt/"))
+        for file in original_names:
+            file = str(file).split(".")[0]
+            with open("releases/ccitt/" + file + ".py", "r") as f:
+                all_lines = f.read()
+            for name in original_names:
+                name = str(name).split(".")[0]
+                print(name)
+                all_lines = all_lines.replace(name, name[:8])
+            with open("releases/ccitt/" + file + ".py", "w") as f:
+                f.write(all_lines)
+            os.rename("releases/ccitt/" + file + ".py", "releases/ccitt/" + file[:8] + ".py")
 
     # Minify
     all_files = os.listdir("releases/ccitt/")
